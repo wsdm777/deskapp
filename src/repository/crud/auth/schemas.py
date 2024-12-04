@@ -12,5 +12,5 @@ class UserCreate(BaseModel):
     is_superuser: bool
     birthday: date
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

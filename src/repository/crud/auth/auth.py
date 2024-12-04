@@ -32,7 +32,7 @@ async def register_user(data: UserCreate):
 
 async def create_user_in_db():
     user_data = UserCreate(
-        email="1tes11tfinal123@example.com",
+        email="1tes11231231231tfinal123@example.com",
         name="123",
         surname="3232",
         hashed_password="1",
