@@ -4,12 +4,8 @@ from src.repository.database import drop_database, initialize_database
 
 
 @pytest.mark.asyncio
-async def test_drop_database():
+async def test_database_refresh():
     await drop_database()
-
-
-@pytest.mark.asyncio
-async def test_create_database():
     await initialize_database()
 
 
