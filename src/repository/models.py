@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import Boolean, Date, ForeignKey, Index, Integer, String
+from sqlalchemy import Date, ForeignKey, Index, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 
@@ -8,8 +8,8 @@ class Base(DeclarativeBase): ...
 
 class Section(Base):
     __tablename__ = "section"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False, index=True)
     head_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey(
@@ -25,9 +25,8 @@ class Section(Base):
 
 class Position(Base):
     __tablename__ = "position"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     section_id: Mapped[int] = mapped_column(
-        Integer,
         ForeignKey(
             "section.id",
             use_alter=True,
@@ -36,7 +35,7 @@ class Position(Base):
         ),
         nullable=True,
     )
-    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(nullable=False, index=True)
 
     section = relationship("Section", back_populates="position")
     user = relationship("User", back_populates="position")
@@ -44,9 +43,8 @@ class Position(Base):
 
 class Vacation(Base):
     __tablename__ = "vacation"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     giver_id: Mapped[int] = mapped_column(
-        Integer,
         ForeignKey(
             "user.id",
             use_alter=True,
@@ -55,7 +53,6 @@ class Vacation(Base):
         ),
     )
     receiver_id: Mapped[int] = mapped_column(
-        Integer,
         ForeignKey(
             "user.id",
             use_alter=True,
@@ -63,9 +60,9 @@ class Vacation(Base):
             ondelete="SET NULL",
         ),
     )
-    start_date: Mapped[Date] = mapped_column(Date, default=date.today)
-    end_date: Mapped[Date] = mapped_column(Date)
-    description: Mapped[str] = mapped_column(String)
+    start_date = mapped_column(Date, default=date.today)
+    end_date = mapped_column(Date)
+    description: Mapped[str]
 
     given = relationship(
         "User", back_populates="given_vacations", foreign_keys=[giver_id]
@@ -84,21 +81,20 @@ class Vacation(Base):
 
 class User(Base):
     __tablename__ = "user"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    surname: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    surname: Mapped[str] = mapped_column(nullable=False)
     position_id: Mapped[int] = mapped_column(
-        Integer,
         ForeignKey(
             "position.id", use_alter=True, name="fk_user_position", ondelete="SET NULL"
         ),
         nullable=True,
     )
-    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-    joined_at: Mapped[Date] = mapped_column(Date, default=date.today)
-    birthday: Mapped[Date] = mapped_column(Date)
+    email: Mapped[str] = mapped_column(nullable=False, unique=True)
+    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
+    joined_at = mapped_column(Date, default=date.today)
+    birthday = mapped_column(Date)
 
     position = relationship("Position", back_populates="user")
 
