@@ -8,7 +8,6 @@ from src.repository.database import drop_database, initialize_database
 async def refresh_database():
     await drop_database()
     await initialize_database()
-    yield
 
 
 @pytest.mark.asyncio
