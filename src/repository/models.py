@@ -6,6 +6,45 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 class Base(DeclarativeBase): ...
 
 
+class Vacation(Base):
+    __tablename__ = "vacation"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    giver_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "user.id",
+            use_alter=True,
+            name="fk_vacation_giv_user",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+    )
+    receiver_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "user.id",
+            use_alter=True,
+            name="fk_vacation_rev_user",
+            ondelete="CASCADE",
+        ),
+    )
+    start_date = mapped_column(Date, default=date.today)
+    end_date = mapped_column(Date)
+    description: Mapped[str]
+
+    given = relationship(
+        "User", back_populates="given_vacations", foreign_keys=[giver_id]
+    )
+
+    receiver = relationship(
+        "User", back_populates="receiver_vacations", foreign_keys=[receiver_id]
+    )
+
+    __table_args__ = (
+        Index("ix_vacation_receiver_id", receiver_id),
+        Index("ix_vacation_giver_id", giver_id),
+        Index("ix_vacation_dates", start_date, end_date),
+    )
+
+
 class Section(Base):
     __tablename__ = "section"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -39,44 +78,6 @@ class Position(Base):
 
     section = relationship("Section", back_populates="position")
     user = relationship("User", back_populates="position")
-
-
-class Vacation(Base):
-    __tablename__ = "vacation"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    giver_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            "user.id",
-            use_alter=True,
-            name="fk_vacation_giv_user",
-            ondelete="SET NULL",
-        ),
-    )
-    receiver_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            "user.id",
-            use_alter=True,
-            name="fk_vacation_rev_user",
-            ondelete="SET NULL",
-        ),
-    )
-    start_date = mapped_column(Date, default=date.today)
-    end_date = mapped_column(Date)
-    description: Mapped[str]
-
-    given = relationship(
-        "User", back_populates="given_vacations", foreign_keys=[giver_id]
-    )
-
-    receiver = relationship(
-        "User", back_populates="receiver_vacations", foreign_keys=[receiver_id]
-    )
-
-    __table_args__ = (
-        Index("ix_vacation_receiver_id", receiver_id),
-        Index("ix_vacation_giver_id", giver_id),
-        Index("ix_vacation_dates", start_date, end_date),
-    )
 
 
 class User(Base):
