@@ -1,14 +1,14 @@
 import pytest
 import pytest_asyncio
 from sqlalchemy import Null
-from src.repository.crud.position.position import add_position
+from src.repository.crud.position.position import add_position, delete_position
 from src.repository.crud.position.schemas import PositionCreate
-from src.repository.crud.section.section import add_section
+from src.repository.crud.section.section import add_section, delete_section
 from src.repository.crud.section.schemas import SectionCreate
-from src.repository.crud.user.user import register_user
+from src.repository.crud.user.user import delete_user, register_user
 from src.repository.crud.user.schemas import UserCreate
 from src.repository.crud.vacation.schemas import VacationCreate
-from src.repository.crud.vacation.vacation import add_vacation
+from src.repository.crud.vacation.vacation import add_vacation, delete_vacation
 from src.repository.database import drop_database, initialize_database
 from faker import Faker
 from faker.providers import BaseProvider
@@ -76,6 +76,31 @@ async def test_create_vacation():
     )
 
     await add_vacation(vacation_data)
+
+
+@pytest.mark.asyncio
+async def test_delete_user():
+    result = await delete_user(1)
+    assert result == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_position():
+    result = await delete_position(1)
+    assert result == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_section():
+    result = await delete_section(1)
+    assert result == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_vacation():
+    result = await delete_vacation(1)
+    with pytest.raises(AssertionError):
+        assert result == 1
 
 
 # TODO faker test
