@@ -1,20 +1,22 @@
 import logging
+from datetime import date
 
+level = logging.DEBUG
+name = "Logger"
+today_date = date.today()
+log_file = f"app_{today_date}_info.log"
 
-def setup_logger(name="my_logger", log_file="app.log", level=logging.DEBUG):
-    # Создаём обработчики для вывода
-    handler = logging.FileHandler(log_file)
-    handler.setLevel(level)
+handler = logging.FileHandler(log_file)
+handler.setLevel(level)
 
-    # Создаём форматтер для логов
-    formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] --- %(message)s (%(filename)s:%(lineno)s)"
-    )
-    handler.setFormatter(formatter)
+dateformat = "%Y-%m-%d %H:%M:%S"
 
-    # Создаём логгер
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.addHandler(handler)
+formatter = logging.Formatter(
+    "[%(asctime)s] [%(levelname)s] --- %(message)s (%(filename)s:%(lineno)s)",
+    datefmt=dateformat,
+)
+handler.setFormatter(formatter)
 
-    return logger
+logger = logging.getLogger(name)
+logger.setLevel(level)
+logger.addHandler(handler)

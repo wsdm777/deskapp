@@ -1,16 +1,10 @@
 from datetime import date
-import logging
-import os
 from bcrypt import gensalt, hashpw
-from sqlalchemy import and_, case, delete, func, insert, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, case, delete, func, select, update
 from src.repository.models import Position, Section, User, Vacation
 from src.repository.database import get_session
 from src.repository.crud.user.schemas import UserCreate, UserInfo
-from src.utils.logger import setup_logger
-
-module_name = os.path.basename(__file__).replace(".py", "")
-logger = setup_logger(module_name)
+from src.utils.logger import logger
 
 
 def hash_password(password: str) -> str:
@@ -45,7 +39,12 @@ async def delete_user(id: int):
         result = await session.execute(stmt)
         await session.commit()
 
-        return result.rowcount
+        if result.rowcount == 0:
+            logger.error(f"User {id} not found")
+            return 0
+
+        logger.info(f"Deleted user {result.rowcount}")
+        return 1
 
 
 async def get_user_by_id(user_id):
@@ -78,10 +77,10 @@ async def get_user_by_id(user_id):
         result = await session.execute(stmt)
         result = result.one_or_none()
         if result is None:
-            raise ValueError
+            logger.error(f"User {user_id} not found")
 
         user, position_name, section_name, on_vacation = result
-
+        logger.info(f"Selected info user {user_id}")
         return UserInfo(
             id=user.id,
             name=user.name,
@@ -102,8 +101,9 @@ async def update_user(id: int):
 
         result = await session.execute(stmt)
         if result.rowcount is None:
-            raise ValueError
+            logger.error(f"User {id} not found")
 
+        logger.info(f"Added superuser rules user {id}")
         await session.commit()
 
         return result.rowcount

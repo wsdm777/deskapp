@@ -1,12 +1,8 @@
-import os
 from sqlalchemy import delete
 from src.repository.crud.section.schemas import SectionCreate
 from src.repository.models import Section
 from src.repository.database import get_session
-from src.utils.logger import setup_logger
-
-module_name = os.path.basename(__file__).replace(".py", "")
-logger = setup_logger(module_name)
+from src.utils.logger import logger
 
 
 async def add_section(data: SectionCreate):
@@ -25,5 +21,5 @@ async def delete_section(id: int):
 
         result = await session.execute(stmt)
         await session.commit()
-
+        logger.info(f"Deleted section: id = {id}")
         return result.rowcount
