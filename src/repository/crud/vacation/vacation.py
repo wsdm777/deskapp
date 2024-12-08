@@ -1,7 +1,12 @@
+import os
 from sqlalchemy import delete
 from src.repository.crud.vacation.schemas import VacationCreate
 from src.repository.models import Vacation
 from src.repository.database import get_session
+from src.utils.logger import setup_logger
+
+module_name = os.path.basename(__file__).replace(".py", "")
+logger = setup_logger(module_name)
 
 
 async def add_vacation(data: VacationCreate):
@@ -16,7 +21,9 @@ async def add_vacation(data: VacationCreate):
 
         session.add(new_vacation)
         await session.commit()
-
+        logger.info(
+            f"Added vacation: giver: {data.giver_id}, receiver: {data.receiver_id}, start date: {data.start_date} end date: {data.end_date}"
+        )
         return {"status": 201}
 
 

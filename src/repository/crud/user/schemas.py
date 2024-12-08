@@ -14,3 +14,16 @@ class UserCreate(BaseModel):
 
     class ConfigDict:
         from_attributes = True
+
+
+class UserInfo(BaseModel):
+    id: int
+    name: str
+    surname: str
+    position_name: str | None
+    section_name: str | None
+    email: EmailStr
+    joined_at: date
+    birthday: date
+    is_on_vacation: bool
+    is_superuser: bool

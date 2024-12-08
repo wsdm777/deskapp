@@ -1,7 +1,12 @@
+import os
 from sqlalchemy import delete
 from src.repository.crud.position.schemas import PositionCreate
 from src.repository.models import Position
 from src.repository.database import get_session
+from src.utils.logger import setup_logger
+
+module_name = os.path.basename(__file__).replace(".py", "")
+logger = setup_logger(module_name)
 
 
 async def add_position(data: PositionCreate):
@@ -10,7 +15,7 @@ async def add_position(data: PositionCreate):
 
         session.add(new_position)
         await session.commit()
-
+        logger.info(f"Added position: name = {data.name}")
         return {"status": 201}
 
 
