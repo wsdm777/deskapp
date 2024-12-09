@@ -1,9 +1,10 @@
 from datetime import date
-from bcrypt import gensalt, hashpw
+from sqlalchemy.exc import IntegrityError
+from bcrypt import checkpw, gensalt, hashpw
 from sqlalchemy import and_, case, delete, func, select, update
 from src.repository.models import Position, Section, User, Vacation
 from src.repository.database import get_session
-from src.repository.crud.user.schemas import UserCreate, UserInfo
+from src.repository.crud.user.schemas import UserCreate, UserInfo, UserLogin
 from src.utils.logger import logger
 
 
@@ -25,11 +26,29 @@ async def register_user(data: UserCreate):
             birthday=data.birthday,
             position_id=data.position_id,
         )
-
         session.add(new_user)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            logger.error(f"Fail to register user {data.email}")
+            return {"status": 400}
         logger.info(f"Registered user: {data.email}")
         return {"status": 201}
+
+
+async def login_user(data: UserLogin):
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.email == data.email))
+        user = result.scalar_one_or_none()
+
+        if user is None or not checkpw(
+            data.password.encode("utf-8"), user.hashed_password.encode("utf-8")
+        ):
+            logger.error(f"Login failed for {data.email}: Invalid email or password")
+            return {"msg": "Неверный логин или пароль"}
+
+        logger.info(f"Logged in: {data.email}")
+        return await get_user_by_id(user.id)
 
 
 async def delete_user(id: int):

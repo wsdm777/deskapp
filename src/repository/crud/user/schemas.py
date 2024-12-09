@@ -27,3 +27,11 @@ class UserInfo(BaseModel):
     birthday: date
     is_on_vacation: bool
     is_superuser: bool
+
+    class ConfigDict:
+        from_attributes = True
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

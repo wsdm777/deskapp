@@ -116,3 +116,4 @@ async def refresh_database():
 def pytest_sessionstart(session):
     logger.info("Starting database setup")
     asyncio.run(refresh_database())
+    logger.info("Finish database setup")
