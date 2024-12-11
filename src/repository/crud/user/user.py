@@ -1,6 +1,6 @@
 from datetime import date
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import contains_eager, joinedload
+from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from bcrypt import checkpw, gensalt, hashpw
 from sqlalchemy import and_, case, delete, func, select, update
 from src.repository.models import Position, Section, User, Vacation
@@ -73,7 +73,7 @@ async def get_user_by_email(user_email):
             select(User, Position.name, Section.name)
             .outerjoin(Position, User.position_id == Position.id)
             .outerjoin(Section, Position.section_id == Section.id)
-            .options(joinedload(User.receiver_vacations))
+            .options(selectinload(User.receiver_vacations))
             .filter(User.email == user_email)
         )
 
