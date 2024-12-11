@@ -12,7 +12,7 @@ handler.setLevel(level)
 dateformat = "%Y-%m-%d %H:%M:%S"
 
 formatter = logging.Formatter(
-    "[%(asctime)s] [%(levelname)-5s] --- %(message)s (%(filename)s:%(lineno)s)",
+    "[%(asctime)s] [%(levelname)-8s] --- %(message)s (%(filename)s:%(lineno)s)",
     datefmt=dateformat,
 )
 handler.setFormatter(formatter)
