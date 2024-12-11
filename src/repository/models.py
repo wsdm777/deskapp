@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import Date, ForeignKey, Index, Integer
+from sqlalchemy import Date, ForeignKey, Index, Integer, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 
@@ -9,18 +9,18 @@ class Base(DeclarativeBase): ...
 class Vacation(Base):
     __tablename__ = "vacation"
     id: Mapped[int] = mapped_column(primary_key=True)
-    giver_id: Mapped[int] = mapped_column(
+    giver_email: Mapped[str] = mapped_column(
         ForeignKey(
-            "user.id",
+            "user.email",
             use_alter=True,
             name="fk_vacation_giv_user",
             ondelete="SET NULL",
         ),
         nullable=True,
     )
-    receiver_id: Mapped[int] = mapped_column(
+    receiver_email: Mapped[str] = mapped_column(
         ForeignKey(
-            "user.id",
+            "user.email",
             use_alter=True,
             name="fk_vacation_rev_user",
             ondelete="CASCADE",
@@ -30,17 +30,17 @@ class Vacation(Base):
     end_date = mapped_column(Date)
     description: Mapped[str]
 
-    given = relationship(
-        "User", back_populates="given_vacations", foreign_keys=[giver_id]
+    giver = relationship(
+        "User", back_populates="given_vacations", foreign_keys=[giver_email]
     )
 
     receiver = relationship(
-        "User", back_populates="receiver_vacations", foreign_keys=[receiver_id]
+        "User", back_populates="receiver_vacations", foreign_keys=[receiver_email]
     )
 
     __table_args__ = (
-        Index("ix_vacation_receiver_id", receiver_id),
-        Index("ix_vacation_giver_id", giver_id),
+        Index("ix_vacation_receiver_id", receiver_email),
+        Index("ix_vacation_giver_id", giver_email),
         Index("ix_vacation_dates", start_date, end_date),
     )
 
@@ -99,14 +99,14 @@ class User(Base):
 
     position = relationship("Position", back_populates="user")
 
-    section_headed = relationship(
-        "Section", back_populates="head", foreign_keys=[Section.head_id]
-    )
+    section_headed = relationship("Section", back_populates="head")
 
     given_vacations = relationship(
-        "Vacation", back_populates="given", foreign_keys=[Vacation.giver_id]
+        "Vacation", back_populates="giver", foreign_keys=[Vacation.giver_email]
     )
     receiver_vacations = relationship(
-        "Vacation", back_populates="receiver", foreign_keys=[Vacation.receiver_id]
+        "Vacation",
+        back_populates="receiver",
+        foreign_keys="Vacation.receiver_email",
     )
     __table_args__ = (Index("ix_user_position_id", position_id),)

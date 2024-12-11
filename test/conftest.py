@@ -48,6 +48,20 @@ fake = Faker(locale=("ru_RU"))
 fake.add_provider(ITDepartmentProvider)
 
 
+def add_root():
+    return register_user(
+        UserCreate(
+            email="root@example.com",
+            name=fake.first_name_male(),
+            surname=fake.last_name_male(),
+            hashed_password=fake.password(),
+            is_superuser=True,
+            birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
+            position_id=None,
+        )
+    )
+
+
 def user_create_task(amount):
     return [
         register_user(
@@ -87,8 +101,8 @@ def vacation_create_task(amount):
     return [
         add_vacation(
             VacationCreate(
-                giver_id=fake.random_int(1, 10),
-                receiver_id=fake.random_int(1, 10),
+                giver_email="root@example.com",
+                receiver_email="root@example.com",
                 start_date=fake.date_this_month(before_today=True, after_today=False),
                 end_date=fake.date_this_month(before_today=False, after_today=True),
                 description=fake.text(60),
@@ -102,12 +116,13 @@ async def refresh_database():
     await drop_database()
     await initialize_database()
 
+    root_user = add_root()
     user_create_tasks = user_create_task(10)
     section_create_tasks = section_create_task(10)
     position_create_tasks = position_create_task(10)
     vacation_create_tasks = vacation_create_task(10)
 
-    await asyncio.gather(*user_create_tasks)
+    await asyncio.gather(root_user, *user_create_tasks)
     await asyncio.gather(*section_create_tasks)
     await asyncio.gather(*position_create_tasks)
     await asyncio.gather(*vacation_create_tasks)

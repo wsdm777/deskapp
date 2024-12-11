@@ -1,5 +1,6 @@
 from datetime import date
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import contains_eager, joinedload
 from bcrypt import checkpw, gensalt, hashpw
 from sqlalchemy import and_, case, delete, func, select, update
 from src.repository.models import Position, Section, User, Vacation
@@ -48,58 +49,46 @@ async def login_user(data: UserLogin):
             return {"msg": "Неверный логин или пароль"}
 
         logger.info(f"Logged in: {data.email}")
-        return await get_user_by_id(user.id)
+        return data.email
 
 
-async def delete_user(id: int):
+async def delete_user(email: str):
     async with get_session() as session:
-        stmt = delete(User).where(User.id == id)
+        stmt = delete(User).where(User.email == email)
 
         result = await session.execute(stmt)
         await session.commit()
 
         if result.rowcount == 0:
-            logger.error(f"User {id} not found")
+            logger.error(f"User {email} not found")
             return 0
 
         logger.info(f"Deleted user {result.rowcount}")
         return 1
 
 
-async def get_user_by_id(user_id):
+async def get_user_by_email(user_email):
     async with get_session() as session:
         stmt = (
-            select(
-                User,
-                Position.name,
-                Section.name,
-                func.max(
-                    case(
-                        (
-                            and_(
-                                Vacation.start_date <= date.today(),
-                                Vacation.end_date >= date.today(),
-                            ),
-                            True,
-                        ),
-                        else_=False,
-                    )
-                ).label("is_on_vacation"),
-            )
-            .outerjoin(Vacation, User.id == Vacation.receiver_id)
+            select(User, Position.name, Section.name)
             .outerjoin(Position, User.position_id == Position.id)
             .outerjoin(Section, Position.section_id == Section.id)
-            .filter(User.id == user_id)
-            .group_by(User, Position.name, Section.name)
+            .options(joinedload(User.receiver_vacations))
+            .filter(User.email == user_email)
         )
 
         result = await session.execute(stmt)
-        result = result.one_or_none()
+        result = result.unique().one_or_none()
         if result is None:
-            logger.error(f"User {user_id} not found")
+            logger.error(f"User {user_email} not found")
 
-        user, position_name, section_name, on_vacation = result
-        logger.info(f"Selected info user {user_id}")
+        logger.info(f"Selected info user {user_email}")
+        user, position_name, section_name = result
+        on_vacation = False
+        for vacation in user.receiver_vacations:
+            if vacation.start_date <= date.today() <= vacation.end_date:
+                on_vacation = True
+
         return UserInfo(
             id=user.id,
             name=user.name,

@@ -1,15 +1,19 @@
 import pytest
+from datetime import date
 from src.repository.crud.position.position import delete_position
 from src.repository.crud.section.section import delete_section
 from src.repository.crud.user.schemas import UserCreate, UserLogin
 from src.repository.crud.user.user import (
     delete_user,
-    get_user_by_id,
+    get_user_by_email,
     login_user,
     register_user,
     update_user,
 )
 from faker import Faker
+
+from src.repository.crud.vacation.vacation import add_vacation
+from src.repository.models import Vacation
 
 fake = Faker(locale=("ru_RU"))
 
@@ -35,13 +39,26 @@ async def test_login_user():
 
 
 @pytest.mark.asyncio
+async def test_create_user_vacancy():
+    await add_vacation(
+        Vacation(
+            giver_email="root@example.com",
+            receiver_email="123@example.com",
+            start_date=fake.date_this_month(before_today=True, after_today=False),
+            end_date=fake.date_this_month(before_today=False, after_today=True),
+            description=fake.text(60),
+        )
+    )
+
+
+@pytest.mark.asyncio
 async def test_update_user():
     await update_user(fake.random_int(1, 10))
 
 
 @pytest.mark.asyncio
 async def test_user_info():
-    result = await get_user_by_id(fake.random_int(1, 10))
+    result = await get_user_by_email("123@example.com")
     print(result)
 
 

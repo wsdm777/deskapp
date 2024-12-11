@@ -1,11 +1,11 @@
 from datetime import date
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 
 
 class VacationCreate(BaseModel):
-    giver_id: int
-    receiver_id: int
+    giver_email: EmailStr
+    receiver_email: EmailStr
     start_date: date
     end_date: date
     description: str | None

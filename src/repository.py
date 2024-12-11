@@ -1,30 +1,19 @@
-import requests
+from src.repository.crud.user.user import login_user
 
 
-class APIClient:
-    def __init__(self, url) -> None:
-        self.baseurl = url
-        self.session = requests.Session()
-        self.cookies = None
+class Client:
+    def __init__(self) -> None:
+        self.email = None
+        self.is_root = None
 
-    def close_session(self):
-        if self.session:
-            self.session.close()
-
-    def login(self, login, password):
-
-        endpoint = "/auth/login"
-        url = f"{self.baseurl}{endpoint}"
-        headers = {
-            "accept": "application/json",
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-        data = {"grant_type": "password", "username": login, "password": password}
-
-        response = self.session.post(url, headers=headers, data=data)
-        if response.status_code == 400:
-            raise ValueError
-        self.cookies = response.cookies.get_dict()
+    async def login(self, login, password):
+        try:
+            data = await login_user(login, password)
+            self.email = data
+            self.is_root = data.is_superuser
+            return data
+        except Exception:
+            return "ERROR"
 
     def my_id(self):
         endpoint = "/user/me"
