@@ -21,11 +21,6 @@ class BaseWindow(QWidget):
         super().__init__()
         self.client = Client()
 
-    def closeEvent(self, event):
-        print("Закрытие окна, завершение сессии API")
-        self.api.close_session()
-        event.accept()
-
 
 class LoginForm(BaseWindow, authForm):
     def __init__(self, loop=None):
@@ -40,48 +35,50 @@ class LoginForm(BaseWindow, authForm):
 
         asyncio.ensure_future(self.run_async_login(username, password))
 
-    @asyncSlot()
     async def run_async_login(self, username, password):
-        # Получаем или создаем цикл событий для асинхронной задачи
         loop = asyncio.get_event_loop()
 
         if loop.is_running():
-            # Если цикл событий уже запущен, создаем задачу
             asyncio.create_task(self.login(username, password))
         else:
-            # Если цикла нет, создаем новый
             loop.run_until_complete(self.login(username, password))
 
     async def login(self, username, password):
         try:
-            res = await self.client.login(username, password)
-            # self.hide()
+            await self.client.login(username, password)
+            self.hide()
+            self.open_profile_window(username)
         except ValueError:
             self.show_error()
 
     def show_error(self):
         self.errorLabel.setText("Логин или пароль неверный")
 
-    # def open_profile_window(self):
-    #     self.window = ProfileWindow(self.api, self.id)
-    #     self.window.show()
+    def open_profile_window(self, username):
+        self.window = ProfileWindow(self.client, username)
+        self.window.show()
 
 
-# class ProfileWindow(BaseWindow, profileForm):
-#     def __init__(self):
-#         super().__init__()
-#         self.setupUi(self)
-#         data = api.get_info_by_id(id)
-#         self.email_value.setText(str(data["email"]))
-#         self.profile_id.setText(f"Пользователь {data["id"]}")
-#         self.name_value.setText(str(data["name"]))
-#         self.surname_value.setText(str(data["surname"]))
-#         self.bitrhday_value.setText(str(data["birthday"]))
-#         self.joined_at_value.setText(str(data["joined_at"]))
-#         self.last_payment_value.setText(str(data["last_bonus_payment"]))
-#         self.button_position.setText(str(data["position_name"]))
-#         self.button_section.setText(str(data["section_name"]))
-#         self.label_2.setText("Да" if data["is_on_vacation"] is True else "Нет")
+class ProfileWindow(BaseWindow, profileForm):
+    def __init__(self, client, username):
+        super().__init__()
+        self.setupUi(self)
+        self.client = client
+        self.username = username
+        asyncio.create_task(self.load_profile_data())
+
+    async def load_profile_data(self):
+        # Получаем данные с сервера
+        data = await self.client.get_home_page()
+        self.email_value.setText(str(data.email))
+        self.profile_id.setText(f"Пользователь {data.id}")
+        self.name_value.setText(str(data.name))
+        self.surname_value.setText(str(data.surname))
+        self.bitrhday_value.setText(str(data.birthday))
+        self.joined_at_value.setText(str(data.joined_at))
+        self.button_position.setText(str(data.position_name))
+        self.button_section.setText(str(data.section_name))
+        self.label_2.setText("Да" if data.is_on_vacation else "Нет")
 
 
 # if __name__ == "__main__":
