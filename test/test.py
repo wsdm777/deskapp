@@ -26,7 +26,7 @@ async def test_create_user():
             name=fake.first_name_male(),
             surname=fake.last_name_male(),
             hashed_password="1",
-            is_superuser=fake.boolean(0),
+            is_superuser=fake.boolean(100),
             birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
             position_id=None,
         )
@@ -53,7 +53,7 @@ async def test_create_user_vacancy():
 
 @pytest.mark.asyncio
 async def test_update_user():
-    await update_user(fake.random_int(1, 10))
+    await update_user("123@example.com")
 
 
 @pytest.mark.asyncio

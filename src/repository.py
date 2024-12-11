@@ -1,4 +1,4 @@
-from src.repository.crud.user.user import login_user
+from src.repository.crud.user.user import get_user_by_email, login_user
 
 
 class Client:
@@ -8,29 +8,28 @@ class Client:
 
     async def login(self, login, password):
         try:
-            data = await login_user(login, password)
-            self.email = data
-            self.is_root = data.is_superuser
+            await login_user(login, password)
+            self.email = login
+        except Exception:
+            return "ERROR"
+
+    async def get_home_page(self):
+        try:
+            data = await get_user_by_email(self.email)
+            if self.is_root is None:
+                self.is_root = data.is_superuser
             return data
         except Exception:
             return "ERROR"
 
-    def my_id(self):
-        endpoint = "/user/me"
-        url = f"{self.baseurl}{endpoint}"
+    async def get_info_by_email(self, email):
+        try:
+            return await get_user_by_email(email)
+        except Exception:
+            return "ERROR"
 
-        headers = {
-            "accept": "application/json",
-        }
-
-        response = self.session.get(url, headers=headers, cookies=self.cookies)
-        return response.json()
-
-    def get_info_by_id(self, id):
-        endpoint = f"/user/{id}"
-        url = f"{self.baseurl}{endpoint}"
-        headers = {
-            "accept": "application/json",
-        }
-        response = self.session.get(url, headers=headers, cookies=self.cookies)
-        return response.json()
+    async def update_user_by_email(self, email):
+        try:
+            return await get_user_by_email(email)
+        except Exception:
+            return "ERROR"

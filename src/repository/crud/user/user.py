@@ -49,7 +49,7 @@ async def login_user(data: UserLogin):
             return {"msg": "Неверный логин или пароль"}
 
         logger.info(f"Logged in: {data.email}")
-        return data.email
+        return {"status": 200}
 
 
 async def delete_user(email: str):
@@ -103,15 +103,16 @@ async def get_user_by_email(user_email):
         )
 
 
-async def update_user(id: int):
+async def update_user(email: str):
     async with get_session() as session:
-        stmt = update(User).where(User.id == id).values(is_superuser=True)
+        stmt = update(User).where(User.email == email).values(is_superuser=True)
 
         result = await session.execute(stmt)
-        if result.rowcount is None:
-            logger.error(f"User {id} not found")
+        if result.rowcount == 0:
+            logger.error(f"User {email} not found")
+            return 0
 
-        logger.info(f"Added superuser rules user {id}")
+        logger.info(f"Added superuser rules user {email}")
         await session.commit()
 
-        return result.rowcount
+        return 1
