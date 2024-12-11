@@ -1,4 +1,6 @@
-from src.repository.crud.user.user import get_user_by_email, login_user
+from src.repository.crud.user.schemas import UserLogin
+from src.repository.crud.user.user import get_user_by_email, login_user, update_user
+from src.utils.logger import logger
 
 
 class Client:
@@ -7,11 +9,10 @@ class Client:
         self.is_root = None
 
     async def login(self, login, password):
-        try:
-            await login_user(login, password)
-            self.email = login
-        except Exception:
-            return "ERROR"
+        res = await login_user(UserLogin(email=login, password=password))
+        if res == 0:
+            raise ValueError
+        self.email = login
 
     async def get_home_page(self):
         try:
@@ -20,16 +21,16 @@ class Client:
                 self.is_root = data.is_superuser
             return data
         except Exception:
-            return "ERROR"
+            logger.critical(f"Home page error {self.email}")
 
     async def get_info_by_email(self, email):
         try:
             return await get_user_by_email(email)
         except Exception:
-            return "ERROR"
+            logger.critical(f"Get info error {self.email}")
 
     async def update_user_by_email(self, email):
         try:
-            return await get_user_by_email(email)
+            return await update_user(email)
         except Exception:
-            return "ERROR"
+            logger.critical(f"Update user error {self.email}")

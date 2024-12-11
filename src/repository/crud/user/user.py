@@ -46,7 +46,7 @@ async def login_user(data: UserLogin):
             data.password.encode("utf-8"), user.hashed_password.encode("utf-8")
         ):
             logger.error(f"Login failed for {data.email}: Invalid email or password")
-            return {"msg": "Неверный логин или пароль"}
+            return 0
 
         logger.info(f"Logged in: {data.email}")
         return {"status": 200}
