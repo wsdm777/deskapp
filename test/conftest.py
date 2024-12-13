@@ -76,7 +76,7 @@ def add_root():
             email="root@example.com",
             name=fake.first_name_male(),
             surname=fake.last_name_male(),
-            hashed_password=fake.password(),
+            hashed_password="root",
             is_superuser=True,
             birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
             position_name=None,

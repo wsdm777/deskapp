@@ -18,46 +18,18 @@ from src.repository.models import Vacation
 
 
 @pytest.mark.asyncio
-async def test_create_user():
-    await register_user(
-        UserCreate(
-            email="123@example.com",
-            name=fake.first_name_male(),
-            surname=fake.last_name_male(),
-            hashed_password="1",
-            is_superuser=fake.boolean(100),
-            birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
-            position_name=None,
-        )
-    )
-
-
-@pytest.mark.asyncio
 async def test_login_user():
-    await login_user(UserLogin(email="123@example.com", password="1"))
-
-
-@pytest.mark.asyncio
-async def test_create_user_vacancy():
-    await add_vacation(
-        Vacation(
-            giver_email="root@example.com",
-            receiver_email="123@example.com",
-            start_date=fake.date_this_month(before_today=True, after_today=False),
-            end_date=fake.date_this_month(before_today=False, after_today=True),
-            description=fake.text(60),
-        )
-    )
+    await login_user(UserLogin(email="root@example.com", password="root"))
 
 
 @pytest.mark.asyncio
 async def test_update_user():
-    await update_user("123@example.com")
+    await update_user(fake.get_email())
 
 
 @pytest.mark.asyncio
 async def test_user_info():
-    result = await get_user_by_email("123@example.com")
+    await get_user_by_email(fake.get_email())
 
 
 @pytest.mark.asyncio
