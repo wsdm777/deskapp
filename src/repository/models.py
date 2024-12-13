@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import Date, ForeignKey, Index, Integer, and_
+from sqlalchemy import Date, ForeignKey, Index, Integer, String, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 
@@ -48,35 +48,33 @@ class Vacation(Base):
 class Section(Base):
     __tablename__ = "section"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False, index=True)
-    head_id: Mapped[int] = mapped_column(
-        Integer,
+    name: Mapped[str] = mapped_column(nullable=False, index=True, unique=True)
+    head_email: Mapped[str] = mapped_column(
         ForeignKey(
-            "user.id", use_alter=True, name="fk_section_user", ondelete="SET NULL"
+            "user.email", use_alter=True, name="fk_section_user", ondelete="SET NULL"
         ),
         nullable=True,
     )
 
-    head = relationship("User", back_populates="section_headed", foreign_keys=[head_id])
-
-    position = relationship("Position", back_populates="section")
+    head = relationship(
+        "User", back_populates="section_headed", foreign_keys=[head_email]
+    )
 
 
 class Position(Base):
     __tablename__ = "position"
     id: Mapped[int] = mapped_column(primary_key=True)
-    section_id: Mapped[int] = mapped_column(
+    section_name: Mapped[str] = mapped_column(
         ForeignKey(
-            "section.id",
+            "section.name",
             use_alter=True,
             name="fk_position_section",
             ondelete="SET NULL",
         ),
         nullable=True,
     )
-    name: Mapped[str] = mapped_column(nullable=False, index=True)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
 
-    section = relationship("Section", back_populates="position")
     user = relationship("User", back_populates="position")
 
 
@@ -85,9 +83,12 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
     surname: Mapped[str] = mapped_column(nullable=False)
-    position_id: Mapped[int] = mapped_column(
+    position_name: Mapped[str] = mapped_column(
         ForeignKey(
-            "position.id", use_alter=True, name="fk_user_position", ondelete="SET NULL"
+            "position.name",
+            use_alter=True,
+            name="fk_user_position",
+            ondelete="SET NULL",
         ),
         nullable=True,
     )
@@ -109,4 +110,4 @@ class User(Base):
         back_populates="receiver",
         foreign_keys="Vacation.receiver_email",
     )
-    __table_args__ = (Index("ix_user_position_id", position_id),)
+    __table_args__ = (Index("ix_user_position_name", position_name),)

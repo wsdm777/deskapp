@@ -25,7 +25,7 @@ async def register_user(data: UserCreate):
             hashed_password=data.hashed_password,
             is_superuser=data.is_superuser,
             birthday=data.birthday,
-            position_id=data.position_id,
+            position_name=data.position_name,
         )
         session.add(new_user)
         try:

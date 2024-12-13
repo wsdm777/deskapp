@@ -26,26 +26,48 @@ class ITDepartmentProvider(BaseProvider):
             "Отдел DevOps",
             "Отдел системного администрирования",
             "Отдел проектирования баз данных",
-            "Отдел тестирования и качества ПО",
-            "Отдел поддержки пользователей",
-            "Отдел облачных технологий",
-            "Отдел виртуализации и контейнеризации",
-            "Отдел разработки веб-приложений",
-            "Отдел бизнес-анализа",
-            "Отдел интеграции и API",
-            "Отдел машинного обучения и искусственного интеллекта",
-            "Отдел разработки игр",
-            "Отдел безопасности сетевой инфраструктуры",
-            "Отдел разработки систем для электронной коммерции",
-            "Отдел аналитики и отчетности",
-            "Отдел цифровой трансформации",
-            "Отдел управления проектами в IT",
         ]
         return self.random_element(it_departments)
 
 
+class EmailProvider(BaseProvider):
+    def get_email(self):
+        emails = [
+            "ivanov@mail.ru",
+            "petrov@yandex.ru",
+            "sidorov@gmail.com",
+            "mikhailov@outlook.com",
+            "alexeev@hotmail.com",
+            "nikolaev@icloud.com",
+            "egorov@gmail.com",
+            "stepanov@zoho.com",
+            "kuznetsov@aol.com",
+            "vasiliev@protonmail.com",
+        ]
+        return self.random_element(emails)
+
+
+class ITJobProvider(BaseProvider):
+    def it_job(self):
+        it_jobs = [
+            "Разработчик программного обеспечения",
+            "Системный администратор",
+            "Администратор баз данных",
+            "Специалист по информационной безопасности",
+            "Техподдержка",
+            "Аналитик данных",
+            "Разработчик мобильных приложений",
+            "DevOps инженер",
+            "Архитектор решений",
+            "IT менеджер",
+        ]
+        return self.random_element(it_jobs)
+
+
 fake = Faker(locale=("ru_RU"))
 fake.add_provider(ITDepartmentProvider)
+fake.add_provider(EmailProvider)
+fake.add_provider(ITJobProvider)
 
 
 def add_root():
@@ -57,22 +79,26 @@ def add_root():
             hashed_password=fake.password(),
             is_superuser=True,
             birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
-            position_id=None,
+            position_name=None,
         )
     )
+
+
+def add_root_section():
+    return add_section(SectionCreate(name="root", head_email="root@example.com"))
 
 
 def user_create_task(amount):
     return [
         register_user(
             UserCreate(
-                email=fake.email(),
+                email=fake.unique.get_email(),
                 name=fake.first_name_male(),
                 surname=fake.last_name_male(),
                 hashed_password=fake.password(),
                 is_superuser=fake.boolean(0),
                 birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
-                position_id=None,
+                position_name=None,
             )
         )
         for _ in range(amount)
@@ -82,7 +108,7 @@ def user_create_task(amount):
 def section_create_task(amount):
     return [
         add_section(
-            SectionCreate(name=fake.it_department(), head_id=fake.random_int(1, 10))
+            SectionCreate(name=fake.unique.it_department(), head_email=fake.get_email())
         )
         for _ in range(amount)
     ]
@@ -91,7 +117,9 @@ def section_create_task(amount):
 def position_create_task(amount):
     return [
         add_position(
-            PositionCreate(name=fake.job_male(), section_id=fake.random_int(1, 10))
+            PositionCreate(
+                name=fake.unique.it_job(), section_name=fake.unique.it_department()
+            )
         )
         for _ in range(amount)
     ]
@@ -101,8 +129,8 @@ def vacation_create_task(amount):
     return [
         add_vacation(
             VacationCreate(
-                giver_email="root@example.com",
-                receiver_email="root@example.com",
+                giver_email=fake.get_email(),
+                receiver_email=fake.get_email(),
                 start_date=fake.date_this_month(before_today=True, after_today=False),
                 end_date=fake.date_this_month(before_today=False, after_today=True),
                 description=fake.text(60),
@@ -117,13 +145,17 @@ async def refresh_database():
     await initialize_database()
 
     root_user = add_root()
+    root_section = add_root_section()
     user_create_tasks = user_create_task(10)
+    fake.unique.clear()
     section_create_tasks = section_create_task(10)
+    fake.unique.clear()
     position_create_tasks = position_create_task(10)
+    fake.unique.clear()
     vacation_create_tasks = vacation_create_task(10)
 
     await asyncio.gather(root_user, *user_create_tasks)
-    await asyncio.gather(*section_create_tasks)
+    await asyncio.gather(root_section, *section_create_tasks)
     await asyncio.gather(*position_create_tasks)
     await asyncio.gather(*vacation_create_tasks)
 

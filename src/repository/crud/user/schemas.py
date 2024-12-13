@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     name: str
     surname: str
-    position_id: Optional[int]
+    position_name: Optional[str]
     hashed_password: str
     is_superuser: bool
     birthday: date
