@@ -71,8 +71,8 @@ async def get_user_by_email(user_email):
     async with get_session() as session:
         stmt = (
             select(User, Position.name, Section.name)
-            .outerjoin(Position, User.position_id == Position.id)
-            .outerjoin(Section, Position.section_id == Section.id)
+            .outerjoin(Position, User.position_name == Position.name)
+            .outerjoin(Section, Position.section_name == Section.name)
             .options(selectinload(User.receiver_vacations))
             .filter(User.email == user_email)
         )

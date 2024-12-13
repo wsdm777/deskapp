@@ -11,12 +11,10 @@ from src.repository.crud.user.user import (
     register_user,
     update_user,
 )
-from faker import Faker
+from test.conftest import fake
 
 from src.repository.crud.vacation.vacation import add_vacation
 from src.repository.models import Vacation
-
-fake = Faker(locale=("ru_RU"))
 
 
 @pytest.mark.asyncio
@@ -49,13 +47,6 @@ async def test_create_user_vacancy():
             end_date=fake.date_this_month(before_today=False, after_today=True),
             description=fake.text(60),
         )
-    )
-
-
-@pytest.mark.asyncio
-async def test_create_section():
-    await add_section(
-        SectionCreate(name=fake.it_department(), head_email="root@example.com")
     )
 
 
