@@ -17,16 +17,19 @@ from src.repository.crud.vacation.vacation import add_vacation
 from src.repository.models import Vacation
 
 
+# Тест входа в аккаунт
 @pytest.mark.asyncio
 async def test_login_user():
     await login_user(UserLogin(email="root@example.com", password="root"))
 
 
+# Тест выдачи прав администратора
 @pytest.mark.asyncio
 async def test_update_user():
     await update_user(fake.get_email())
 
 
+# Тест просмотра информации о пользователе
 @pytest.mark.asyncio
 async def test_user_info():
     await get_user_by_email(fake.get_email())

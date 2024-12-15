@@ -9,19 +9,25 @@ async def add_position(data: PositionCreate):
     async with get_session() as session:
         new_position = Position(section_name=data.section_name, name=data.name)
 
+        # Добавление должности в сессию
         session.add(new_position)
+        # Сохранение в бд
         await session.commit()
+        # Логгер записывает успешное добавление
         logger.info(
             f"Added position: name = {data.name}, section = {data.section_name}"
         )
-        return {"status": 201}
+        return 1
 
 
 async def delete_position(name: int):
     async with get_session() as session:
         stmt = delete(Position).where(Position.name == name)
-
         result = await session.execute(stmt)
+
+        # Сохранение изменений в бд
         await session.commit()
+
+        # Логгер записывает успешное создание должности
         logger.info(f"Deleted position: name = {name}")
         return result.rowcount

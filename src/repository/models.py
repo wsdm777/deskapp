@@ -59,6 +59,7 @@ class Section(Base):
     head = relationship(
         "User", back_populates="section_headed", foreign_keys=[head_email]
     )
+    __table_args__ = (Index("ix_section_head_email", head_email),)
 
 
 class Position(Base):
@@ -76,6 +77,7 @@ class Position(Base):
     name: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
 
     user = relationship("User", back_populates="position")
+    __table_args__ = (Index("ix_position_section_name", section_name),)
 
 
 class User(Base):

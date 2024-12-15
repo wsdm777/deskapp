@@ -10,13 +10,16 @@ from src.utils.logger import logger
 
 
 def hash_password(password: str) -> str:
+    # Получение соли
     salt = gensalt()
+    # Создание хеша пароля с помощью соли
     hashed_password = hashpw(password.encode("utf-8"), salt)
     return hashed_password.decode("utf-8")
 
 
 async def register_user(data: UserCreate):
     async with get_session() as session:
+        # Хеширование введенного пароля
         data.hashed_password = hash_password(data.hashed_password)
         new_user = User(
             email=data.email,
@@ -28,28 +31,34 @@ async def register_user(data: UserCreate):
             position_name=data.position_name,
         )
         session.add(new_user)
+        # Попытка создания нового пользователя
         try:
             await session.commit()
         except IntegrityError:
             logger.error(f"Fail to register user {data.email}")
-            return {"status": 400}
+            return 0
+        # При успешном создании пользователя функция вернет 1 и логгер запишет успешное создание
         logger.info(f"Registered user: {data.email}")
-        return {"status": 201}
+        return 1
 
 
 async def login_user(data: UserLogin):
     async with get_session() as session:
+
+        # Запрос в базу данных на поиск пользователя с указанным email
         result = await session.execute(select(User).where(User.email == data.email))
         user = result.scalar_one_or_none()
 
+        # Если пользователь не найден или хеш пароля не совпал функция возвращает 0 и логгер записывает ошибку
         if user is None or not checkpw(
             data.password.encode("utf-8"), user.hashed_password.encode("utf-8")
         ):
             logger.error(f"Login failed for {data.email}: Invalid email or password")
             return 0
 
+        # При успешном входе в систему функция возвращает 1 и логгер записывает успешный вход в систему
         logger.info(f"Logged in: {data.email}")
-        return {"status": 200}
+        return 1
 
 
 async def delete_user(email: str):
