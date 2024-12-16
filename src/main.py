@@ -12,7 +12,7 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
 from src.repository_file import Client
 from src.ui.auth.authwindow import Ui_Form as authForm
-from src.ui.profile.profile import Ui_Dialog as profileForm
+from src.ui.profile.new_profile import Ui_Dialog as profileForm
 from qasync import QEventLoop, asyncSlot
 
 
@@ -70,6 +70,8 @@ class ProfileWindow(BaseWindow, profileForm):
     async def load_profile_data(self):
         # Получаем данные с сервера
         data = await self.client.get_home_page()
+        if data.is_superuser is True:
+            self.label_3.setText("Администратор")
         self.email_value.setText(str(data.email))
         self.profile_id.setText(f"Пользователь {data.id}")
         self.name_value.setText(str(data.name))

@@ -6,7 +6,7 @@ from src.repository.crud.section.section import add_section
 from src.repository.crud.user.schemas import UserCreate
 from src.repository.crud.user.user import register_user
 from src.repository.crud.vacation.schemas import VacationCreate
-from src.repository.crud.vacation.vacation import add_vacation, delete_vacation
+from src.repository.crud.vacation.vacation import add_vacation
 from src.repository.database import drop_database, initialize_database
 from faker import Faker
 from faker.providers import BaseProvider
