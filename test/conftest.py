@@ -4,7 +4,7 @@ from src.repository.crud.position.schemas import PositionCreate
 from src.repository.crud.section.schemas import SectionCreate
 from src.repository.crud.section.section import add_section
 from src.repository.crud.user.schemas import UserCreate
-from src.repository.crud.user.user import register_user
+from src.repository.crud.user.user import change_user_position, register_user
 from src.repository.crud.vacation.schemas import VacationCreate
 from src.repository.crud.vacation.vacation import add_vacation
 from src.repository.database import drop_database, initialize_database
@@ -96,7 +96,7 @@ def user_create_task(amount):
                 name=fake.first_name_male(),
                 surname=fake.last_name_male(),
                 hashed_password=fake.password(),
-                is_superuser=fake.boolean(0),
+                is_superuser=fake.boolean(20),
                 birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
                 position_name=None,
             )
@@ -117,9 +117,7 @@ def section_create_task(amount):
 def position_create_task(amount):
     return [
         add_position(
-            PositionCreate(
-                name=fake.unique.it_job(), section_name=fake.unique.it_department()
-            )
+            PositionCreate(name=fake.unique.it_job(), section_name=fake.it_department())
         )
         for _ in range(amount)
     ]
@@ -140,6 +138,15 @@ def vacation_create_task(amount):
     ]
 
 
+def update_position_create_task(amount):
+    return [
+        change_user_position(
+            email=fake.unique.get_email(), new_position_name=fake.it_job()
+        )
+        for _ in range(amount)
+    ]
+
+
 async def refresh_database():
     await drop_database()
     await initialize_database()
@@ -153,11 +160,14 @@ async def refresh_database():
     position_create_tasks = position_create_task(10)
     fake.unique.clear()
     vacation_create_tasks = vacation_create_task(10)
+    fake.unique.clear()
+    update_position_tasks = update_position_create_task(10)
 
     await asyncio.gather(root_user, *user_create_tasks)
     await asyncio.gather(root_section, *section_create_tasks)
     await asyncio.gather(*position_create_tasks)
     await asyncio.gather(*vacation_create_tasks)
+    await asyncio.gather(*update_position_tasks)
 
 
 def pytest_sessionstart(session):

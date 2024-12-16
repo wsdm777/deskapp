@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from bcrypt import checkpw, gensalt, hashpw
-from sqlalchemy import and_, case, delete, func, select, update
+from sqlalchemy import and_, case, delete, func, or_, select, update
 from src.repository.models import Position, Section, User, Vacation
 from src.repository.database import get_session
 from src.repository.crud.user.schemas import UserCreate, UserInfo, UserLogin
@@ -140,7 +140,73 @@ async def change_user_position(email: str, new_position_name: str):
             logger.error(f"User {email} not found")
             return 0
 
-        logger.info(f"Change user {email} position to {new_position_name}")
+        logger.info(f"Change position: user = {email}, position = {new_position_name}")
         await session.commit()
 
         return 1
+
+
+async def get_users(filter_on_vacation=None, filter_superuser=None):
+    async with get_session() as session:
+        stmt = (
+            select(User, Position.name, Section.name)
+            .outerjoin(Position, User.position_name == Position.name)
+            .outerjoin(Section, Position.section_name == Section.name)
+            .outerjoin(Vacation, User.email == Vacation.receiver_email)
+            .options(selectinload(User.receiver_vacations))
+            .order_by(User.name, User.surname)
+        )
+
+        if filter_superuser is not None:
+            stmt = stmt.filter(User.is_superuser == filter_superuser)
+
+        if filter_on_vacation is not None:
+            today = date.today()
+            if filter_on_vacation:
+                stmt = stmt.filter(
+                    and_(
+                        Vacation.start_date <= today,
+                        Vacation.end_date >= today,
+                    )
+                )
+            else:
+                stmt = stmt.filter(
+                    or_(
+                        Vacation.start_date > today,
+                        Vacation.end_date < today,
+                        Vacation.id.is_(None),
+                    )
+                )
+
+        result = await session.execute(stmt)
+        users_info = []
+
+        for user, position_name, section_name in result.unique().all():
+            on_vacation = False
+
+            if filter_on_vacation is None:
+                for vacation in user.receiver_vacations:
+                    if vacation.start_date <= date.today() <= vacation.end_date:
+                        on_vacation = True
+                        break
+            else:
+                on_vacation = filter_on_vacation
+
+            users_info.append(
+                UserInfo(
+                    id=user.id,
+                    name=user.name,
+                    surname=user.surname,
+                    email=user.email,
+                    joined_at=user.joined_at,
+                    birthday=user.birthday,
+                    position_name=position_name,
+                    section_name=section_name,
+                    is_on_vacation=on_vacation,
+                    is_superuser=user.is_superuser,
+                )
+            )
+        logger.info(
+            f"Selected all users with filters: vacation = {filter_on_vacation}, superuser = {filter_superuser}"
+        )
+        return users_info
