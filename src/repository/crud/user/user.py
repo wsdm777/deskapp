@@ -125,3 +125,22 @@ async def update_user(email: str):
         await session.commit()
 
         return 1
+
+
+async def change_user_position(email: str, new_position_name: str):
+    async with get_session() as session:
+        stmt = (
+            update(User)
+            .where(User.email == email)
+            .values(position_name=new_position_name)
+        )
+
+        result = await session.execute(stmt)
+        if result.rowcount == 0:
+            logger.error(f"User {email} not found")
+            return 0
+
+        logger.info(f"Change user {email} position to {new_position_name}")
+        await session.commit()
+
+        return 1
