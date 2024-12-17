@@ -3,7 +3,7 @@ from datetime import date
 from src.repository.crud.position.position import delete_position
 from src.repository.crud.section.schemas import SectionCreate
 from src.repository.crud.section.section import add_section, delete_section
-from src.repository.crud.user.schemas import UserCreate, UserLogin
+from src.repository.crud.user.schemas import UserCreate, UserLogin, UserSearchParametrs
 from src.repository.crud.user.user import (
     change_user_position,
     delete_user,
@@ -52,63 +52,26 @@ async def test_change_user_position():
 
 
 @pytest.mark.asyncio
-async def test_get_all_users():
-    result = await get_users()
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_users_on_vacation_true():
-    result = await get_users(filter_on_vacation=True)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_users_on_vacation_false():
-    result = await get_users(filter_on_vacation=False)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_admins():
-    result = await get_users(filter_superuser=True)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_common_users():
-    result = await get_users(filter_superuser=False)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_common_users_on_vacation():
-    result = await get_users(filter_on_vacation=True, filter_superuser=False)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_common_users_not_on_vacation():
-    result = await get_users(filter_on_vacation=False, filter_superuser=False)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_admins_on_vacation():
-    result = await get_users(filter_on_vacation=True, filter_superuser=True)
-    for row in result:
-        print(row)
-
-
-@pytest.mark.asyncio
-async def test_get_all_admins_not_on_vacation():
-    result = await get_users(filter_on_vacation=False, filter_superuser=True)
+@pytest.mark.parametrize(
+    "filter_on_vacation, filter_position",
+    [
+        (None, None),  # Все пользователи
+        (True, None),  # Пользователи в отпуске
+        (False, None),  # Пользователи не в отпуске
+        (None, fake.it_job()),  # Все пользователи из случайной должности
+        (True, fake.it_job()),  # Пользователи в отпуске из случайной должности
+        (False, fake.it_job()),  # Пользователи из случайной должности
+    ],
+)
+async def test_get_users(filter_on_vacation, filter_position):
+    """
+    Тест функции get_users с параметрами filter_on_vacation и filter_position.
+    """
+    params = UserSearchParametrs(
+        filter_on_vacation=filter_on_vacation, filter_position=filter_position
+    )
+    result = await get_users(params)
+    print("\n Тест с параметрами:")
+    print(f"filter_on_vacation={filter_on_vacation}, filter_position={filter_position}")
     for row in result:
         print(row)
