@@ -35,3 +35,8 @@ class UserInfo(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class UserSearchParametrs(BaseModel):
+    filter_on_vacation: bool | None
+    filter_position: str | None

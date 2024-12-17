@@ -28,6 +28,7 @@ class Vacation(Base):
     )
     start_date = mapped_column(Date, default=date.today)
     end_date = mapped_column(Date)
+    created_date = mapped_column(Date, default=date.today)
     description: Mapped[str]
 
     giver = relationship(

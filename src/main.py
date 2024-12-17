@@ -83,16 +83,7 @@ class ProfileWindow(BaseWindow, profileForm):
         self.label_2.setText("Да" if data.is_on_vacation else "Нет")
 
 
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     app.setWindowIcon(QIcon("icon.jpg"))
-#     login_form = LoginForm()
-#     login_form.show()
-#     sys.exit(app.exec())
-
-# TODO button section in api
-# TODO create is superuser
-# TODO create upgrade user
+# TODO position usecases
 
 
 def main():

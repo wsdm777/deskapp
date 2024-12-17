@@ -19,3 +19,9 @@ class VacationCreate(BaseModel):
             raise ValueError("the start date must be earlier than the end date")
 
         return values
+
+
+class VacationInfo(VacationCreate):
+    id: int
+    created_date: date
+    is_active: bool

@@ -1,5 +1,6 @@
-from sqlalchemy import delete
-from src.repository.crud.vacation.schemas import VacationCreate
+from datetime import date
+from sqlalchemy import cte, delete, select
+from src.repository.crud.vacation.schemas import VacationCreate, VacationInfo
 from src.repository.models import Vacation
 from src.repository.database import get_session
 from src.utils.logger import logger
@@ -21,6 +22,34 @@ async def add_vacation(data: VacationCreate):
         # Сохранение нового отпуска в бд
         await session.commit()
         logger.info(
-            f"Added vacation: giver = {data.giver_email}, receiver = {data.receiver_email}, start date = {data.start_date} end date = {data.end_date}"
+            f"Added vacation: giver = {data.giver_email}, receiver = {data.receiver_email}, start = {data.start_date}, end = {data.end_date}"
         )
         return 1
+
+
+async def get_vacation(vacation_id: int):
+    async with get_session() as session:
+        query = select(Vacation).where(Vacation.id == vacation_id)
+        result = session.execute(query)
+        vacation = result.scalar_one_or_none()
+
+        if vacation is None:
+            logger.error(f"Vacaion {vacation_id} not found")
+            return 0
+
+        logger.info(f"Selected info vacation {vacation_id}")
+
+        active = False
+        if vacation.start_date <= date.today() <= vacation.end_date:
+            active = True
+
+        return VacationInfo(
+            id=vacation.id,
+            giver_email=vacation.giver_email,
+            receiver_email=vacation.receiver_email,
+            start_date=vacation.start_date,
+            end_date=vacation.end_date,
+            created_at=vacation.created_date,
+            description=vacation.description,
+            is_active=active,
+        )
