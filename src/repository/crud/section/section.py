@@ -1,6 +1,7 @@
-from sqlalchemy import delete
+from tkinter import SE
+from sqlalchemy import delete, select
 from src.repository.crud.section.schemas import SectionCreate
-from src.repository.models import Section
+from src.repository.models import Position, Section, User
 from src.repository.database import get_session
 from src.utils.logger import logger
 
@@ -37,11 +38,13 @@ async def delete_section(name: str):
         return 1
 
 
-async def get_section_by_name(name: str):
+async def get_section_by_name(section_name: str):
     async with get_session() as session:
-        stmt = delete(Section).where(Section.id == id)
-
-        result = await session.execute(stmt)
-        await session.commit()
-        logger.info(f"Deleted section: id = {id}")
-        return result.rowcount
+        query = (
+            select(Section, Position.name)
+            .outerjoin(Position, Section.name == Position.section_name)
+            .filter(Section.name == section_name)
+        )
+        result = await session.execute(query)
+        result = result.unique().all()
+        return result
