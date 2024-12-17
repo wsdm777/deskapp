@@ -5,7 +5,12 @@ from bcrypt import checkpw, gensalt, hashpw
 from sqlalchemy import and_, case, delete, func, or_, select, update
 from src.repository.models import Position, Section, User, Vacation
 from src.repository.database import get_session
-from src.repository.crud.user.schemas import UserCreate, UserInfo, UserLogin
+from src.repository.crud.user.schemas import (
+    UserCreate,
+    UserInfo,
+    UserLogin,
+    UserSearchParametrs,
+)
 from src.utils.logger import logger
 
 
@@ -78,7 +83,7 @@ async def delete_user(email: str):
 
 async def get_user_by_email(user_email):
     async with get_session() as session:
-        stmt = (
+        query = (
             select(User, Position.name, Section.name)
             .outerjoin(Position, User.position_name == Position.name)
             .outerjoin(Section, Position.section_name == Section.name)
@@ -86,7 +91,7 @@ async def get_user_by_email(user_email):
             .filter(User.email == user_email)
         )
 
-        result = await session.execute(stmt)
+        result = await session.execute(query)
         result = result.unique().one_or_none()
         if result is None:
             logger.error(f"User {user_email} not found")
@@ -146,9 +151,9 @@ async def change_user_position(email: str, new_position_name: str):
         return 1
 
 
-async def get_users(filter_on_vacation=None, filter_superuser=None):
+async def get_users(data: UserSearchParametrs):
     async with get_session() as session:
-        stmt = (
+        query = (
             select(User, Position.name, Section.name)
             .outerjoin(Position, User.position_name == Position.name)
             .outerjoin(Section, Position.section_name == Section.name)
@@ -157,40 +162,37 @@ async def get_users(filter_on_vacation=None, filter_superuser=None):
             .order_by(User.name, User.surname)
         )
 
-        if filter_superuser is not None:
-            stmt = stmt.filter(User.is_superuser == filter_superuser)
+        if data.filter_position:
+            query = query.filter(Position.name == data.filter_position)
 
-        if filter_on_vacation is not None:
+        if data.filter_on_vacation is not None:
             today = date.today()
-            if filter_on_vacation:
-                stmt = stmt.filter(
-                    and_(
-                        Vacation.start_date <= today,
-                        Vacation.end_date >= today,
-                    )
+            if data.filter_on_vacation:
+                query = query.filter(
+                    Vacation.start_date <= today, Vacation.end_date >= today
                 )
-            else:
-                stmt = stmt.filter(
+            elif data.filter_on_vacation is False:
+                query = query.filter(
                     or_(
-                        Vacation.start_date > today,
-                        Vacation.end_date < today,
                         Vacation.id.is_(None),
+                        Vacation.end_date < today,
+                        Vacation.start_date > today,
                     )
                 )
 
-        result = await session.execute(stmt)
+        result = await session.execute(query)
         users_info = []
 
         for user, position_name, section_name in result.unique().all():
             on_vacation = False
 
-            if filter_on_vacation is None:
+            if data.filter_on_vacation is None:
                 for vacation in user.receiver_vacations:
                     if vacation.start_date <= date.today() <= vacation.end_date:
                         on_vacation = True
                         break
             else:
-                on_vacation = filter_on_vacation
+                on_vacation = data.filter_on_vacation
 
             users_info.append(
                 UserInfo(
@@ -207,6 +209,6 @@ async def get_users(filter_on_vacation=None, filter_superuser=None):
                 )
             )
         logger.info(
-            f"Selected all users with filters: vacation = {filter_on_vacation}, superuser = {filter_superuser}"
+            f"Selected all users: filter_on_vacation={data.filter_on_vacation}, filter_position={data.filter_position}"
         )
         return users_info
