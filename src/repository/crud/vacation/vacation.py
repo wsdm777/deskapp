@@ -20,7 +20,8 @@ async def add_vacation(data: VacationCreate):
         session.add(new_vacation)
 
         # Сохранение нового отпуска в бд
-        await session.commit()
+        result = await session.commit()
+
         logger.info(
             f"Added vacation: giver = {data.giver_email}, receiver = {data.receiver_email}, start = {data.start_date}, end = {data.end_date}"
         )

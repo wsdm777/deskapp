@@ -11,12 +11,16 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
-from src.repository.crud.vacation.vacation import get_all_vacations
+from src.repository.crud.vacation.schemas import VacationCreate
+from src.repository.crud.vacation.vacation import add_vacation, get_all_vacations
 from src.repository_file import Client
 from src.ui.auth.authwindow import Ui_Form as authForm
 from src.ui.profile.profile_window_rew import Ui_Dialog as profileForm
 from src.ui.main.main_window_rew import Ui_Form as mainForm
 from src.ui.vacations.vacations_window_rew import Ui_Dialog as vacationForm
+from src.ui.vacations.vacation_create.vacation_create import (
+    Ui_Form as vacationCreateForm,
+)
 from qasync import QEventLoop, asyncSlot
 
 
@@ -148,11 +152,23 @@ class VacationWindow(BaseWindow, vacationForm):
         self.setupUi(self)
         self.client = client
         self.username = username
+        self.vacation_button.clicked.connect(self.open_vacation_create)
+        self.main_window_button.clicked.connect(self.open_main)
         asyncio.create_task(self.load_vacations())
+
+    def open_vacation_create(self):
+        self.window = VacationCreateForm(self.client, self.username)
+        self.window.show()
+
+    def open_main(self):
+        self.hide()
+        self.window = MainWindow(self.client, self.username)
+        self.window.show()
 
     async def load_vacations(self):
         result = await get_all_vacations()
         if result != 0:
+            self.countler.setText(str(len(result)))
             self.tableWidget.setRowCount(len(result))
             self.tableWidget.setColumnCount(8)
             self.tableWidget.setHorizontalHeaderLabels(
@@ -184,9 +200,37 @@ class VacationWindow(BaseWindow, vacationForm):
                     i, 5, QTableWidgetItem(result[i].end_date.strftime("%Y-%m-%d"))
                 )
                 self.tableWidget.setItem(
-                    i, 6, QTableWidgetItem(str(result[i].is_active))
+                    i,
+                    6,
+                    QTableWidgetItem("Да" if result[i].is_active == True else "Нет"),
                 )
                 self.tableWidget.setItem(i, 7, QTableWidgetItem(result[i].description))
+
+
+class VacationCreateForm(BaseWindow, vacationCreateForm):
+    def __init__(self, client, username):
+        super().__init__()
+        self.setupUi(self)
+        self.client = client
+        self.username = username
+        self.pushButton.clicked.connect(self.on_button_clicked)
+
+    def on_button_clicked(self):
+        asyncio.create_task(self.add_vacation())
+
+    async def add_vacation(self):
+        try:
+            result = await add_vacation(
+                VacationCreate(
+                    giver_email=self.username,
+                    receiver_email=self.lineEdit.text(),
+                    start_date=self.start_date.date().toPyDate(),
+                    end_date=self.start_date_2.date().toPyDate(),
+                    description=self.lineEdit_2.text(),
+                )
+            )
+        except:
+            ...
 
 
 def main():
