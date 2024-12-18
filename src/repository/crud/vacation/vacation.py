@@ -49,7 +49,7 @@ async def get_vacation(vacation_id: int):
             receiver_email=vacation.receiver_email,
             start_date=vacation.start_date,
             end_date=vacation.end_date,
-            created_at=vacation.created_date,
+            created_date=vacation.created_date,
             description=vacation.description,
             is_active=active,
         )
@@ -63,7 +63,7 @@ async def get_all_vacations(filter_receiver: str = None, filter_giver: str = Non
         if filter_giver:
             query = query.filter(Vacation.giver_email == filter_giver)
         result = await session.execute(query)
-        result = result.all()
+        result = result.scalars().all()
 
         vacations = []
 

@@ -1,6 +1,7 @@
 import asyncio
 from multiprocessing import Value
 import sys
+from PyQt6.QtWidgets import QTableWidgetItem
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -10,10 +11,12 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
+from src.repository.crud.vacation.vacation import get_all_vacations
 from src.repository_file import Client
 from src.ui.auth.authwindow import Ui_Form as authForm
 from src.ui.profile.profile_window_rew import Ui_Dialog as profileForm
 from src.ui.main.main_window_rew import Ui_Form as mainForm
+from src.ui.vacations.vacations_window_rew import Ui_Dialog as vacationForm
 from qasync import QEventLoop, asyncSlot
 
 
@@ -102,6 +105,7 @@ class MainWindow(BaseWindow, mainForm):
         self.setupUi(self)
         self.client = client
         self.username = username
+        self.vacations.clicked.connect(self.on_vacation_clicked)
         self.pushButton.clicked.connect(self.on_find_clicked)
         self.profile_button.clicked.connect(self.on_profile_clicked)
         asyncio.create_task(self.load_main_window())
@@ -120,6 +124,11 @@ class MainWindow(BaseWindow, mainForm):
         self.window = ProfileWindow(self.client, self.username)
         self.window.show()
 
+    def on_vacation_clicked(self):
+        self.hide()
+        self.window = VacationWindow(self.client, self.username)
+        self.window.show()
+
     def on_find_clicked(self):
         asyncio.create_task(self.open_profile_user(self.user_find_line.text()))
 
@@ -131,6 +140,53 @@ class MainWindow(BaseWindow, mainForm):
             self.hide()
             self.window = ProfileWindow(self.client, self.username, username)
             self.window.show()
+
+
+class VacationWindow(BaseWindow, vacationForm):
+    def __init__(self, client, username):
+        super().__init__()
+        self.setupUi(self)
+        self.client = client
+        self.username = username
+        asyncio.create_task(self.load_vacations())
+
+    async def load_vacations(self):
+        result = await get_all_vacations()
+        if result != 0:
+            self.tableWidget.setRowCount(len(result))
+            self.tableWidget.setColumnCount(8)
+            self.tableWidget.setHorizontalHeaderLabels(
+                [
+                    "ID",
+                    "Выдал",
+                    "Получил",
+                    "Дата выдачи",
+                    "Дата начала",
+                    "Дата окончания",
+                    "Активно",
+                    "Описание",
+                ]
+            )
+
+            for i in range(len(result)):
+                self.tableWidget.setItem(i, 0, QTableWidgetItem(str(result[i].id)))
+                self.tableWidget.setItem(i, 1, QTableWidgetItem(result[i].giver_email))
+                self.tableWidget.setItem(
+                    i, 2, QTableWidgetItem(result[i].receiver_email)
+                )
+                self.tableWidget.setItem(
+                    i, 3, QTableWidgetItem(result[i].created_date.strftime("%Y-%m-%d"))
+                )
+                self.tableWidget.setItem(
+                    i, 4, QTableWidgetItem(result[i].start_date.strftime("%Y-%m-%d"))
+                )
+                self.tableWidget.setItem(
+                    i, 5, QTableWidgetItem(result[i].end_date.strftime("%Y-%m-%d"))
+                )
+                self.tableWidget.setItem(
+                    i, 6, QTableWidgetItem(str(result[i].is_active))
+                )
+                self.tableWidget.setItem(i, 7, QTableWidgetItem(result[i].description))
 
 
 def main():

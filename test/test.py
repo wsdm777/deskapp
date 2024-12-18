@@ -15,7 +15,7 @@ from src.repository.crud.user.user import (
 )
 from test.conftest import fake
 
-from src.repository.crud.vacation.vacation import add_vacation
+from src.repository.crud.vacation.vacation import add_vacation, get_all_vacations
 from src.repository.models import Vacation
 
 
@@ -75,3 +75,9 @@ async def test_get_users(filter_on_vacation, filter_position):
     print(f"filter_on_vacation={filter_on_vacation}, filter_position={filter_position}")
     for row in result:
         print(row)
+
+
+@pytest.mark.asyncio
+async def test_get_all_vacations():
+    result = await get_all_vacations()
+    print(result)
