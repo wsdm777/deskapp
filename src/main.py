@@ -12,7 +12,8 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
 from src.repository_file import Client
 from src.ui.auth.authwindow import Ui_Form as authForm
-from src.ui.profile.new_profile import Ui_Dialog as profileForm
+from src.ui.profile.profile_window_rew import Ui_Dialog as profileForm
+from src.ui.main.main_window_rew import Ui_Form as mainForm
 from qasync import QEventLoop, asyncSlot
 
 
@@ -60,16 +61,19 @@ class LoginForm(BaseWindow, authForm):
 
 
 class ProfileWindow(BaseWindow, profileForm):
-    def __init__(self, client, username):
+    def __init__(self, client, username, profile_username=None):
         super().__init__()
         self.setupUi(self)
+        self.pushButton.clicked.connect(self.on_main_clicked)
         self.client = client
         self.username = username
-        asyncio.create_task(self.load_profile_data())
+        asyncio.create_task(self.load_profile_data(profile_username))
 
-    async def load_profile_data(self):
+    async def load_profile_data(self, user):
         # Получаем данные с сервера
-        data = await self.client.get_home_page()
+        data, is_root = await self.client.get_page(user)
+        if data == 0:
+            raise ValueError
         if data.is_superuser is True:
             self.label_3.setText("Администратор")
         self.email_value.setText(str(data.email))
@@ -82,8 +86,51 @@ class ProfileWindow(BaseWindow, profileForm):
         self.button_section.setText(str(data.section_name))
         self.label_2.setText("Да" if data.is_on_vacation else "Нет")
 
+        if is_root == False or data.email == self.username:
+            self.pushButton_2.setVisible(False)
+            self.pushButton_3.setVisible(False)
 
-# TODO position usecases
+    def on_main_clicked(self):
+        self.hide()
+        self.window = MainWindow(self.client, self.username)
+        self.window.show()
+
+
+class MainWindow(BaseWindow, mainForm):
+    def __init__(self, client, username):
+        super().__init__()
+        self.setupUi(self)
+        self.client = client
+        self.username = username
+        self.pushButton.clicked.connect(self.on_find_clicked)
+        self.profile_button.clicked.connect(self.on_profile_clicked)
+        asyncio.create_task(self.load_main_window())
+
+    async def load_main_window(self):
+        data = await self.client.get_info_by_email()
+        self.userinfo.setText(str(f"{data.name} {data.surname}"))
+        if data.is_superuser == True:
+            self.access_info.setText("Администратор")
+            self.access_info.setStyleSheet("color: red;")
+        else:
+            self.access_info.setText("Пользователь")
+
+    def on_profile_clicked(self):
+        self.hide()
+        self.window = ProfileWindow(self.client, self.username)
+        self.window.show()
+
+    def on_find_clicked(self):
+        asyncio.create_task(self.open_profile_user(self.user_find_line.text()))
+
+    async def open_profile_user(self, username):
+        result = await self.client.get_info_by_email(username)
+        if result == 0:
+            self.error_found_user.setText("Пользователь не найден")
+        else:
+            self.hide()
+            self.window = ProfileWindow(self.client, self.username, username)
+            self.window.show()
 
 
 def main():

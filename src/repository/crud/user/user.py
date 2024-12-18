@@ -95,6 +95,7 @@ async def get_user_by_email(user_email):
         result = result.unique().one_or_none()
         if result is None:
             logger.error(f"User {user_email} not found")
+            return 0
 
         logger.info(f"Selected info user {user_email}")
         user, position_name, section_name = result
