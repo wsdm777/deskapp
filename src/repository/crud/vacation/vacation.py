@@ -30,7 +30,7 @@ async def add_vacation(data: VacationCreate):
 async def get_vacation(vacation_id: int):
     async with get_session() as session:
         query = select(Vacation).where(Vacation.id == vacation_id)
-        result = session.execute(query)
+        result = await session.execute(query)
         vacation = result.scalar_one_or_none()
 
         if vacation is None:
@@ -53,3 +53,22 @@ async def get_vacation(vacation_id: int):
             description=vacation.description,
             is_active=active,
         )
+
+
+async def get_all_vacations(filter_receiver: str = None, filter_giver: str = None):
+    async with get_session() as session:
+        query = select(Vacation)
+        if filter_receiver:
+            query = query.filter(Vacation.receiver_email == filter_receiver)
+        if filter_giver:
+            query = query.filter(Vacation.giver_email == filter_giver)
+        result = await session.execute(query)
+        result = result.all()
+
+        vacations = []
+
+        for vacation in result:
+            vacation_info = await get_vacation(vacation.id)
+            vacations.append(vacation_info)
+
+        return vacations
