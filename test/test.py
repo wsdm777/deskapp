@@ -16,7 +16,11 @@ from src.repository.crud.user.user import (
 from src.repository.crud.vacation.schemas import VacationCreate
 from test.conftest import fake
 
-from src.repository.crud.vacation.vacation import add_vacation, get_all_vacations
+from src.repository.crud.vacation.vacation import (
+    add_vacation,
+    get_all_vacations,
+    get_vacation,
+)
 from src.repository.models import Vacation
 
 
@@ -94,7 +98,15 @@ async def test_get_users(filter_on_vacation, filter_position):
         print(row)
 
 
+# Тест просмотра всех отпусков
 @pytest.mark.asyncio
 async def test_get_all_vacations():
     result = await get_all_vacations()
+    print(result)
+
+
+# Тест просмотра отпуска
+@pytest.mark.asyncio
+async def test_get_vacation():
+    result = await get_vacation(fake.random_int(1, 11))
     print(result)
