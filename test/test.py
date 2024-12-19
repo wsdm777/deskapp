@@ -13,6 +13,7 @@ from src.repository.crud.user.user import (
     register_user,
     update_user,
 )
+from src.repository.crud.vacation.schemas import VacationCreate
 from test.conftest import fake
 
 from src.repository.crud.vacation.vacation import add_vacation, get_all_vacations
@@ -37,6 +38,7 @@ async def test_user_info():
     await get_user_by_email(fake.get_email())
 
 
+# Тест удаления пользователя
 @pytest.mark.asyncio
 async def test_delete_user():
     with pytest.raises(AssertionError):
@@ -44,10 +46,25 @@ async def test_delete_user():
         assert result == 1
 
 
+# Тест смена должности пользователя
 @pytest.mark.asyncio
 async def test_change_user_position():
     await change_user_position(
         email="root@example.com", new_position_name=fake.it_job()
+    )
+
+
+# Тест добавления новой записи об отпуске
+@pytest.mark.asyncio
+async def test_vacation_add():
+    await add_vacation(
+        VacationCreate(
+            giver_email=fake.get_email(),
+            receiver_email=fake.get_email(),
+            start_date=fake.date_this_month(before_today=True, after_today=False),
+            end_date=fake.date_this_month(before_today=False, after_today=True),
+            description=fake.text(60),
+        )
     )
 
 
