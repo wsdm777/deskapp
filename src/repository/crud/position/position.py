@@ -21,7 +21,7 @@ async def add_position(data: PositionCreate):
         return 1
 
 
-async def delete_position(name: int):
+async def delete_position(name: str):
     async with get_session() as session:
         stmt = delete(Position).where(Position.name == name)
         result = await session.execute(stmt)
@@ -53,3 +53,27 @@ async def get_position(position_name: str):
             section_name=position.section_name,
             user=len(position.user),
         )
+
+
+async def get_positions(section_name: str):
+    async with get_session() as session:
+        query = (
+            select(Position)
+            .filter(Position.section_name == section_name)
+            .options(selectinload(Position.user))
+        )
+        result = await session.execute(query)
+        positions = result.scalars().all()
+
+        list_positions = []
+        logger.info(f"Selected info positions of {section_name}")
+        for position in positions:
+            list_positions.append(
+                PositionInfo(
+                    id=position.id,
+                    name=position.name,
+                    section_name=position.section_name,
+                    users=len(position.user),
+                )
+            )
+        return list_positions

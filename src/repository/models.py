@@ -29,7 +29,7 @@ class Vacation(Base):
     start_date = mapped_column(Date, default=date.today)
     end_date = mapped_column(Date)
     created_date = mapped_column(Date, default=date.today)
-    description: Mapped[str]
+    description: Mapped[str] = mapped_column(nullable=True)
 
     giver = relationship(
         "User", back_populates="given_vacations", foreign_keys=[giver_email]
@@ -71,7 +71,7 @@ class Position(Base):
             "section.name",
             use_alter=True,
             name="fk_position_section",
-            ondelete="SET NULL",
+            ondelete="CASCADE",
         ),
         nullable=True,
     )

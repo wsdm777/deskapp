@@ -160,7 +160,7 @@ async def get_users(data: UserSearchParametrs):
             .outerjoin(Section, Position.section_name == Section.name)
             .outerjoin(Vacation, User.email == Vacation.receiver_email)
             .options(selectinload(User.receiver_vacations))
-            .order_by(User.name, User.surname)
+            .order_by(User.surname, User.name)
         )
 
         if data.filter_position:

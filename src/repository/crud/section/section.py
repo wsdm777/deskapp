@@ -1,5 +1,6 @@
 from sqlalchemy import delete, select, update
-from src.repository.crud.section.schemas import SectionCreate
+from src.repository.crud import vacation
+from src.repository.crud.section.schemas import SectionCreate, SectionInfo
 from src.repository.models import Position, Section, User
 from src.repository.database import get_session
 from src.utils.logger import logger
@@ -24,7 +25,7 @@ async def update_section_head(section_name: str, new_head_email):
         stmt = (
             update(Section)
             .where(Section.name == section_name)
-            .values(Section.head_email == new_head_email)
+            .values(head_email=new_head_email)
         )
 
         result = await session.execute(stmt)
@@ -59,23 +60,29 @@ async def delete_section(section_name: str):
 
 async def get_section_by_name(section_name: str):
     async with get_session() as session:
-        query = (
-            select(Section, Position.name)
-            .outerjoin(Position, Section.name == Position.section_name)
-            .filter(Section.name == section_name)
-        )
+        query = select(Section).filter(Section.name == section_name)
         result = await session.execute(query)
-        result = result.unique().one_or_none()
+        result = result.unique().scalar_one_or_none()
         if result is None:
             logger.error(f"Section {section_name} not found")
             return 0
 
-        return result
+        return SectionInfo(id=result.id, name=result.name, head_email=result.head_email)
 
 
 async def get_all_sections():
     async with get_session() as session:
         query = select(Section)
         result = await session.execute(query)
-        sections = result.all()
+        result = result.scalars().all()
+
+        sections = []
+
+        for section in result:
+            sections.append(
+                SectionInfo(
+                    id=section.id, name=section.name, head_email=section.head_email
+                )
+            )
+
         return sections

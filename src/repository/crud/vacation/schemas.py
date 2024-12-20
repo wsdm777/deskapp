@@ -22,6 +22,8 @@ class VacationCreate(BaseModel):
 
 
 class VacationInfo(VacationCreate):
+    giver_email: EmailStr | None
+    receiver_email: EmailStr | None
     id: int
     created_date: date
     is_active: bool

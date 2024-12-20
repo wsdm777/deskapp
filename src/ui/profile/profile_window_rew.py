@@ -267,20 +267,8 @@ class Ui_Dialog(object):
         self.joined_at_value.setFont(font)
         self.joined_at_value.setObjectName("joined_at_value")
         self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.ItemRole.FieldRole, self.joined_at_value)
-        self.pushButton_2 = QtWidgets.QPushButton(parent=Dialog)
-        self.pushButton_2.setStyleSheet("QPushButton {\n"
-"    border: none;\n"
-"    color: white;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    color: red;\n"
-"}")
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pushButton_2)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.formLayout_2.setItem(5, QtWidgets.QFormLayout.ItemRole.FieldRole, spacerItem2)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.formLayout_2.setItem(6, QtWidgets.QFormLayout.ItemRole.LabelRole, spacerItem3)
         self.pushButton_3 = QtWidgets.QPushButton(parent=Dialog)
         self.pushButton_3.setEnabled(True)
         self.pushButton_3.setStyleSheet("QPushButton {\n"
@@ -291,7 +279,28 @@ class Ui_Dialog(object):
 "    color: green;\n"
 "}")
         self.pushButton_3.setObjectName("pushButton_3")
-        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pushButton_3)
+        self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pushButton_3)
+        self.pushButton_2 = QtWidgets.QPushButton(parent=Dialog)
+        self.pushButton_2.setStyleSheet("QPushButton {\n"
+"    border: none;\n"
+"    color: white;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    color: red;\n"
+"}")
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pushButton_2)
+        self.lineEdit = QtWidgets.QLineEdit(parent=Dialog)
+        self.lineEdit.setObjectName("lineEdit")
+        self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.ItemRole.LabelRole, self.lineEdit)
+        self.pushButton_4 = QtWidgets.QPushButton(parent=Dialog)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pushButton_4)
+        self.error_label = QtWidgets.QLabel(parent=Dialog)
+        self.error_label.setStyleSheet("color:red")
+        self.error_label.setText("")
+        self.error_label.setObjectName("error_label")
+        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.ItemRole.LabelRole, self.error_label)
         self.verticalLayout_3.addLayout(self.formLayout_2)
         self.verticalLayout_3.setStretch(0, 10)
         self.verticalLayout_3.setStretch(2, 15)
@@ -320,5 +329,7 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", "TextLabel"))
         self.label_9.setText(_translate("Dialog", "В компании с"))
         self.joined_at_value.setText(_translate("Dialog", "TextLabel"))
-        self.pushButton_2.setText(_translate("Dialog", "Уволить сотрудника"))
         self.pushButton_3.setText(_translate("Dialog", "Выдать сотруднику права администратора"))
+        self.pushButton_2.setText(_translate("Dialog", "Уволить сотрудника"))
+        self.lineEdit.setPlaceholderText(_translate("Dialog", "Новая должность"))
+        self.pushButton_4.setText(_translate("Dialog", "Выдать сотруднику новую должность"))

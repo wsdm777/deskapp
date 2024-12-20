@@ -15,6 +15,18 @@ class Ui_Form(object):
         Form.resize(700, 350)
         Form.setMinimumSize(QtCore.QSize(700, 350))
         Form.setMaximumSize(QtCore.QSize(700, 350))
+        Form.setStyleSheet("QWidget {\n"
+"    background-color: #2C2F33;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton {\n"
+"    border: 2px solid white;\n"
+"    border-radius: 5px; /* Белая обводка шириной 2px */\n"
+"    padding: 5px 10px;      /* Внутренние отступы */\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color:#3A3D42; /* Цвет при наведении */\n"
+"}")
         self.sections = QtWidgets.QPushButton(parent=Form)
         self.sections.setGeometry(QtCore.QRect(20, 210, 190, 81))
         self.sections.setObjectName("sections")
@@ -59,6 +71,12 @@ class Ui_Form(object):
         font.setFamily("Verdana")
         self.label.setFont(font)
         self.label.setObjectName("label")
+        self.adduser = QtWidgets.QPushButton(parent=Form)
+        self.adduser.setGeometry(QtCore.QRect(20, 310, 161, 31))
+        self.adduser.setObjectName("adduser")
+        self.adduser_2 = QtWidgets.QPushButton(parent=Form)
+        self.adduser_2.setGeometry(QtCore.QRect(280, 310, 161, 31))
+        self.adduser_2.setObjectName("adduser_2")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -75,3 +93,5 @@ class Ui_Form(object):
         self.user_find_line.setPlaceholderText(_translate("Form", "Введите почту сотрудника"))
         self.pushButton.setText(_translate("Form", "Найти"))
         self.label.setText(_translate("Form", "Поиск сотрудника"))
+        self.adduser.setText(_translate("Form", "Добавиль пользователя"))
+        self.adduser_2.setText(_translate("Form", "Экспорт базы данных"))

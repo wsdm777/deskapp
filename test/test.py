@@ -2,7 +2,11 @@ import pytest
 from datetime import date
 from src.repository.crud.position.position import delete_position
 from src.repository.crud.section.schemas import SectionCreate
-from src.repository.crud.section.section import add_section, delete_section
+from src.repository.crud.section.section import (
+    add_section,
+    delete_section,
+    update_section_head,
+)
 from src.repository.crud.user.schemas import UserCreate, UserLogin, UserSearchParametrs
 from src.repository.crud.user.user import (
     change_user_position,
@@ -58,20 +62,6 @@ async def test_change_user_position():
     )
 
 
-# Тест добавления новой записи об отпуске
-@pytest.mark.asyncio
-async def test_vacation_add():
-    await add_vacation(
-        VacationCreate(
-            giver_email=fake.get_email(),
-            receiver_email=fake.get_email(),
-            start_date=fake.date_this_month(before_today=True, after_today=False),
-            end_date=fake.date_this_month(before_today=False, after_today=True),
-            description=fake.text(60),
-        )
-    )
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "filter_on_vacation, filter_position",
@@ -102,11 +92,9 @@ async def test_get_users(filter_on_vacation, filter_position):
 @pytest.mark.asyncio
 async def test_get_all_vacations():
     result = await get_all_vacations()
-    print(result)
 
 
 # Тест просмотра отпуска
 @pytest.mark.asyncio
 async def test_get_vacation():
     result = await get_vacation(fake.random_int(1, 11))
-    print(result)

@@ -69,7 +69,20 @@ async def get_all_vacations(filter_receiver: str = None, filter_giver: str = Non
         vacations = []
 
         for vacation in result:
-            vacation_info = await get_vacation(vacation.id)
-            vacations.append(vacation_info)
+            active = False
+            if vacation.start_date <= date.today() <= vacation.end_date:
+                active = True
+            vacations.append(
+                VacationInfo(
+                    id=vacation.id,
+                    giver_email=vacation.giver_email,
+                    receiver_email=vacation.receiver_email,
+                    start_date=vacation.start_date,
+                    end_date=vacation.end_date,
+                    created_date=vacation.created_date,
+                    description=vacation.description,
+                    is_active=active,
+                )
+            )
 
         return vacations

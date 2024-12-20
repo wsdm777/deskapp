@@ -8,7 +8,7 @@ from sqlalchemy import event
 
 DATABASE_URL = DB_URL
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine("sqlite+aiosqlite:///app.db")
 
 sessionfactory = async_sessionmaker(engine, expire_on_commit=False)
 

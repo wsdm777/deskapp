@@ -25,6 +25,20 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+    background-color: #2C2F33;
+    color: #FFFFFF;
+}
+QPushButton {
+    border: 2px solid white;
+	border-radius: 5px; /* Белая обводка шириной 2px */
+    padding: 5px 10px;      /* Внутренние отступы */
+}
+QPushButton:hover {
+    background-color:#3A3D42; /* Цвет при наведении */
+}</string>
+  </property>
   <widget class="QPushButton" name="sections">
    <property name="geometry">
     <rect>
@@ -178,6 +192,32 @@
    </property>
    <property name="text">
     <string>Поиск сотрудника</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="adduser">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>310</y>
+     <width>161</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Добавиль пользователя</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="adduser_2">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>310</y>
+     <width>161</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Экспорт базы данных</string>
    </property>
   </widget>
  </widget>

@@ -16,16 +16,16 @@ from src.utils.logger import logger
 class ITDepartmentProvider(BaseProvider):
     def it_department(self):
         it_departments = [
-            "Отдел разработки программного обеспечения",
-            "Отдел информационной безопасности",
-            "Отдел технической поддержки",
-            "Отдел инфраструктуры и сетей",
-            "Отдел анализа данных",
-            "Отдел автоматизации процессов",
-            "Отдел разработки мобильных приложений",
-            "Отдел DevOps",
-            "Отдел системного администрирования",
-            "Отдел проектирования баз данных",
+            "Разработка",
+            "Безопасность",
+            "Тех. поддержка",
+            "Сети",
+            "Анализа данных",
+            "Автоматизации процессов",
+            "Mobile разработка",
+            "DevOps",
+            "Системное администрирование",
+            "Проектирования баз данных",
         ]
         return self.random_element(it_departments)
 
@@ -50,16 +50,26 @@ class EmailProvider(BaseProvider):
 class ITJobProvider(BaseProvider):
     def it_job(self):
         it_jobs = [
-            "Разработчик программного обеспечения",
+            "Разработчик",
             "Системный администратор",
             "Администратор баз данных",
-            "Специалист по информационной безопасности",
+            "Специалист по безопасности",
             "Техподдержка",
             "Аналитик данных",
             "Разработчик мобильных приложений",
-            "DevOps инженер",
+            "DevOps",
             "Архитектор решений",
             "IT менеджер",
+            "UI/UX дизайнер",
+            "Тестировщик",
+            "Инженер по автоматизации",
+            "Сетевой инженер",
+            "Программист веб-приложений",
+            "Менеджер проектов в IT",
+            "Инженер по машинному обучению",
+            "Руководитель отдела разработки",
+            "Разработчик игр",
+            "Специалист по облачным технологиям",
         ]
         return self.random_element(it_jobs)
 
@@ -84,10 +94,6 @@ def add_root():
     )
 
 
-def add_root_section():
-    return add_section(SectionCreate(name="root", head_email="root@example.com"))
-
-
 def user_create_task(amount):
     return [
         register_user(
@@ -99,6 +105,23 @@ def user_create_task(amount):
                 is_superuser=fake.boolean(20),
                 birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
                 position_name=None,
+            )
+        )
+        for _ in range(amount)
+    ]
+
+
+def user_fill_create_task(amount):
+    return [
+        register_user(
+            UserCreate(
+                email=fake.unique.email(),
+                name=fake.first_name_male(),
+                surname=fake.last_name_male(),
+                hashed_password=fake.password(),
+                is_superuser=fake.boolean(20),
+                birthday=fake.date_of_birth(minimum_age=18, maximum_age=60),
+                position_name=fake.it_job(),
             )
         )
         for _ in range(amount)
@@ -131,7 +154,7 @@ def vacation_create_task(amount):
                 receiver_email=fake.get_email(),
                 start_date=fake.date_this_month(before_today=True, after_today=False),
                 end_date=fake.date_this_month(before_today=False, after_today=True),
-                description=fake.text(60),
+                description=None,
             )
         )
         for _ in range(amount)
@@ -152,22 +175,24 @@ async def refresh_database():
     await initialize_database()
 
     root_user = add_root()
-    root_section = add_root_section()
     user_create_tasks = user_create_task(10)
     fake.unique.clear()
     section_create_tasks = section_create_task(10)
     fake.unique.clear()
-    position_create_tasks = position_create_task(10)
+    position_create_tasks = position_create_task(20)
     fake.unique.clear()
     vacation_create_tasks = vacation_create_task(10)
     fake.unique.clear()
     update_position_tasks = update_position_create_task(10)
+    fake.unique.clear()
+    fill_users = user_fill_create_task(20)
 
     await asyncio.gather(root_user, *user_create_tasks)
-    await asyncio.gather(root_section, *section_create_tasks)
+    await asyncio.gather(*section_create_tasks)
     await asyncio.gather(*position_create_tasks)
     await asyncio.gather(*vacation_create_tasks)
     await asyncio.gather(*update_position_tasks)
+    await asyncio.gather(*fill_users)
 
 
 def pytest_sessionstart(session):
