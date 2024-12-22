@@ -41,7 +41,7 @@ async def register_user(data: UserCreate):
             await session.commit()
         except IntegrityError:
             logger.error(f"Fail to register user {data.email}")
-            return 0
+            raise ValueError
         # При успешном создании пользователя функция вернет 1 и логгер запишет успешное создание
         logger.info(f"Registered user: {data.email}")
         return 1
